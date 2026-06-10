@@ -43,7 +43,7 @@
   /* Search */
   .search-wrap{padding:18px 22px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FFFDF8,#FBF6ED);}
   .search-row{display:flex;gap:8px;}
-  .search-field{flex:1;position:relative;}
+  .search-field{flex:1;position:relative;max-width:220px;}
   .search-field svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:0.5;}
   .search-row input{
     width:100%;padding:12px 13px 12px 38px;font-family:var(--sans);font-size:15px;
@@ -59,6 +59,14 @@
   }
   .btn-find:hover{background:var(--wine-dark);}
   .btn-find:active{transform:scale(0.97);}
+  .btn-clear{
+    padding:12px 14px;font-family:var(--sans);font-size:14px;font-weight:600;border-radius:11px;
+    border:1px solid var(--line-strong);background:#fff;color:var(--ink-soft);cursor:pointer;
+    transition:background .15s,color .15s,transform .08s;-webkit-tap-highlight-color:transparent;
+    display:none;
+  }
+  .btn-clear:hover{background:var(--line);color:var(--ink);}
+  .btn-clear:active{transform:scale(0.97);}
 
   .mode-row{display:flex;gap:6px;margin-top:12px;}
   .mode-btn{
@@ -132,6 +140,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         <input type="text" id="query" placeholder="Product name or SKU…" autocomplete="off" autocorrect="off" spellcheck="false">
       </div>
+      <button class="btn-clear" onclick="clearInput()" id="btn-clear" title="Clear">✕</button>
       <button class="btn-find" onclick="launch()">Open</button>
     </div>
     <div class="mode-row">
@@ -246,7 +255,16 @@
     el.focus();
   }
 
-  document.getElementById('query').addEventListener('keydown', e => {
+  function clearInput(){
+    const el = document.getElementById('query');
+    el.value = '';
+    el.focus();
+    document.getElementById('btn-clear').style.display = 'none';
+  }
+
+  document.getElementById('query').addEventListener('input', function(){
+    document.getElementById('btn-clear').style.display = this.value ? 'block' : 'none';
+  });
     if (e.key === 'Enter') launch();
   });
 
