@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#11385f">
+<title>EW Lookup · Everything Wine Quick Search</title>
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22EW+Lookup%22%2C%22short_name%22%3A%22EW%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23EFE7D8%22%2C%22theme_color%22%3A%22%2311385f%22%7D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF7EF;--page:#EFE7D8;--ink:#2A2320;--ink-soft:#7A6F64;--ink-faint:#B6A998;
+    --line:#E6DCCB;--line-strong:#D8CCB6;--wine:#11385f;--wine-dark:#0b2a47;--wine-tint:#E0EAF3;
+    --gold:#C49A4A;--sans:'Hanken Grotesk',system-ui,sans-serif;--serif:'Marcellus',Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:var(--sans);
+    background:radial-gradient(120% 80% at 50% -10%,#F6EFE2 0%,var(--page) 60%) fixed;
+    color:var(--ink);min-height:100vh;display:flex;justify-content:center;
+    padding:32px 16px 40px;-webkit-font-smoothing:antialiased;
+  }
+  .screen{
+    background:var(--paper);border-radius:18px;border:1px solid var(--line-strong);
+    box-shadow:0 1px 0 rgba(255,255,255,0.6) inset,0 18px 50px -24px rgba(60,30,20,0.45);
+    overflow:hidden;width:100%;max-width:452px;align-self:flex-start;display:flex;flex-direction:column;
+  }
+
+  /* Masthead */
+  .masthead{padding:22px 22px 18px;border-bottom:1px solid var(--line);position:relative;}
+  .masthead::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;
+    background:linear-gradient(90deg,var(--wine) 0%,var(--wine) 60%,var(--gold) 60%,var(--gold) 100%);opacity:0.9;}
+  .brand-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .brand-mark{width:30px;height:30px;border-radius:50%;background:var(--wine);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .brand-mark span{font-family:var(--serif);color:#F6E3C8;font-size:15px;line-height:1;}
+  .brand-over{font-size:10.5px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--wine);}
+  .brand-sub{font-size:11px;color:var(--ink-soft);letter-spacing:0.04em;margin-top:1px;}
+  .masthead h1{font-family:var(--serif);font-weight:400;font-size:28px;line-height:1.05;color:var(--wine);letter-spacing:0.01em;}
+  .masthead .tagline{font-size:12.5px;color:var(--ink-soft);margin-top:6px;}
+
+  /* Search */
+  .search-wrap{padding:18px 22px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FFFDF8,#FBF6ED);}
+  .search-row{display:flex;gap:8px;}
+  .search-field{flex:1;position:relative;}
+  .search-field svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:0.5;}
+  .search-row input{
+    width:100%;padding:12px 13px 12px 38px;font-family:var(--sans);font-size:15px;
+    border-radius:11px;border:1px solid var(--line-strong);background:#fff;color:var(--ink);
+    transition:box-shadow .15s,border-color .15s;-webkit-appearance:none;
+  }
+  .search-row input::placeholder{color:var(--ink-faint);}
+  .search-row input:focus{outline:none;border-color:var(--wine);box-shadow:0 0 0 3px rgba(17,56,95,0.12);}
+  .btn-find{
+    padding:12px 18px;font-family:var(--sans);font-size:14px;font-weight:600;border-radius:11px;
+    border:1px solid var(--wine);background:var(--wine);color:#FBF3E6;cursor:pointer;white-space:nowrap;
+    transition:background .15s,transform .08s;-webkit-tap-highlight-color:transparent;
+  }
+  .btn-find:hover{background:var(--wine-dark);}
+  .btn-find:active{transform:scale(0.97);}
+
+  .mode-row{display:flex;gap:6px;margin-top:12px;}
+  .mode-btn{
+    font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:99px;cursor:pointer;font-family:inherit;
+    border:1px solid var(--line-strong);background:#fff;color:var(--ink-soft);
+    transition:background .12s,color .12s,border-color .12s;-webkit-tap-highlight-color:transparent;
+  }
+  .mode-btn:hover:not(.active){border-color:var(--wine);color:var(--wine);}
+  .mode-btn.active{background:var(--wine);color:#FBF3E6;border-color:var(--wine);}
+  .hint{font-size:12px;color:var(--ink-faint);margin-top:11px;min-height:16px;letter-spacing:0.01em;}
+
+  /* Shortcuts */
+  .block{padding:16px 22px;border-bottom:1px solid var(--line);}
+  .block-label{font-size:10.5px;font-weight:700;color:var(--ink-faint);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;justify-content:space-between;}
+  .shortcuts{display:flex;flex-wrap:wrap;gap:7px;}
+  .shortcut{
+    font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:99px;cursor:pointer;user-select:none;
+    border:1px solid var(--line);background:#fff;color:var(--ink);
+    transition:background .12s,border-color .12s,transform .08s;-webkit-tap-highlight-color:transparent;
+  }
+  .shortcut:hover{background:var(--wine-tint);border-color:var(--wine);color:var(--wine);}
+  .shortcut:active{transform:scale(0.96);}
+
+  /* History */
+  .clear-all{
+    font-size:11px;font-weight:600;color:var(--ink-faint);background:none;border:none;cursor:pointer;
+    padding:0;font-family:inherit;letter-spacing:0.04em;transition:color .12s;
+  }
+  .clear-all:hover{color:var(--wine);}
+  .history-list{display:flex;flex-direction:column;gap:7px;}
+  .history-item{
+    display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:11px 12px;cursor:pointer;transition:border-color .12s,box-shadow .12s;-webkit-tap-highlight-color:transparent;
+  }
+  .history-item:hover{border-color:var(--line-strong);box-shadow:0 2px 8px -4px rgba(60,30,20,0.22);}
+  .history-icon{width:26px;height:26px;border-radius:7px;background:var(--wine-tint);color:var(--wine);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .history-query{flex:1;font-size:14px;font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .history-mode{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);
+    background:#F6EEE0;border:1px solid var(--line);border-radius:6px;padding:3px 7px;flex-shrink:0;}
+  .history-delete{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:17px;padding:2px 4px;
+    flex-shrink:0;line-height:1;transition:color .12s;-webkit-tap-highlight-color:transparent;}
+  .history-delete:hover{color:var(--wine);}
+  .empty-history{font-size:13px;color:var(--ink-faint);text-align:center;padding:18px 0;}
+
+  /* Footer */
+  footer{text-align:center;font-size:11px;color:var(--ink-faint);padding:16px 22px;letter-spacing:0.01em;}
+  footer a{color:var(--ink-soft);text-decoration:none;font-weight:600;}
+  footer a:hover{color:var(--wine);}
+</style>
+</head>
+<body>
+
+<div class="screen">
+
+  <div class="masthead">
+    <div class="brand-row">
+      <div class="brand-mark"><span>EW</span></div>
+      <div>
+        <div class="brand-over">Everything Wine</div>
+        <div class="brand-sub">Product Quick Search</div>
+      </div>
+    </div>
+    <h1>Product Quick Lookup</h1>
+    <p class="tagline">Search a product by name or SKU — opens results on everythingwine.ca.</p>
+  </div>
+
+  <div class="search-wrap">
+    <div class="search-row">
+      <div class="search-field">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="query" placeholder="Product name or SKU…" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <button class="btn-find" onclick="launch()">Open</button>
+    </div>
+    <div class="mode-row">
+      <button class="mode-btn active" id="mode-search" onclick="setMode('search')">Search by name</button>
+      <button class="mode-btn" id="mode-sku" onclick="setMode('sku')">Go by SKU</button>
+    </div>
+    <div class="hint" id="hint">Searches by product name on everythingwine.ca</div>
+  </div>
+
+  <div class="block" id="history-section">
+    <div class="block-label">
+      Recent searches
+      <button class="clear-all" onclick="clearAll()">Clear all</button>
+    </div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+  <footer>
+    Bookmark this file for instant access &nbsp;·&nbsp;
+    <a href="https://www.everythingwine.ca" target="_blank">everythingwine.ca ↗</a>
+  </footer>
+
+</div>
+
+<script>
+  let mode = 'search';
+  const STORAGE_KEY = 'ew_lookup_history_v2';
+  const MAX_HISTORY = 20;
+
+  function getHistory(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch { return []; }
+  }
+  function saveHistory(h){ localStorage.setItem(STORAGE_KEY, JSON.stringify(h)); }
+
+  function addToHistory(query, mode){
+    let h = getHistory();
+    h = h.filter(i => !(i.query === query && i.mode === mode));
+    h.unshift({ query, mode, ts: Date.now() });
+    if (h.length > MAX_HISTORY) h = h.slice(0, MAX_HISTORY);
+    saveHistory(h);
+    renderHistory();
+  }
+  function removeFromHistory(idx){
+    let h = getHistory();
+    h.splice(idx, 1);
+    saveHistory(h);
+    renderHistory();
+  }
+  function clearAll(){
+    if (confirm('Clear all recent searches?')) { saveHistory([]); renderHistory(); }
+  }
+
+  const ICON_SEARCH = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+  const ICON_SKU = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="4" y2="18"/><line x1="8" y1="6" x2="8" y2="18"/><line x1="12" y1="6" x2="12" y2="18"/><line x1="16" y1="6" x2="16" y2="18"/><line x1="20" y1="6" x2="20" y2="18"/></svg>';
+
+  function renderHistory(){
+    const h = getHistory();
+    const list = document.getElementById('history-list');
+    if (h.length === 0){
+      list.innerHTML = '<div class="empty-history">No recent searches yet</div>';
+      return;
+    }
+    list.innerHTML = h.map((item, idx) => `
+      <div class="history-item" onclick="relaunch(${idx})">
+        <span class="history-icon">${item.mode === 'sku' ? ICON_SKU : ICON_SEARCH}</span>
+        <span class="history-query">${escHtml(item.query)}</span>
+        <span class="history-mode">${item.mode === 'sku' ? 'SKU' : 'Name'}</span>
+        <button class="history-delete" onclick="event.stopPropagation(); removeFromHistory(${idx})" title="Remove">×</button>
+      </div>
+    `).join('');
+  }
+
+  function escHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildUrl(q){
+    return 'https://www.everythingwine.ca/catalogsearch/result/?q=' + encodeURIComponent(q.trim());
+  }
+
+  function launch(){
+    const q = document.getElementById('query').value.trim();
+    if (!q){ document.getElementById('query').focus(); return; }
+    window.open(buildUrl(q), '_blank');
+    addToHistory(q, mode);
+  }
+
+  function relaunch(idx){
+    const h = getHistory();
+    const item = h[idx];
+    setMode(item.mode);
+    document.getElementById('query').value = item.query;
+    window.open(buildUrl(item.query), '_blank');
+    addToHistory(item.query, item.mode);
+  }
+
+  function setMode(m){
+    mode = m;
+    document.getElementById('mode-search').classList.toggle('active', m === 'search');
+    document.getElementById('mode-sku').classList.toggle('active', m === 'sku');
+    document.getElementById('hint').textContent = m === 'search'
+      ? 'Searches by product name on everythingwine.ca'
+      : 'Searches by SKU number on everythingwine.ca';
+    document.getElementById('query').placeholder = m === 'search' ? 'Product name…' : 'SKU number…';
+  }
+
+  function prefill(term){
+    setMode('search');
+    const el = document.getElementById('query');
+    el.value = term;
+    el.focus();
+  }
+
+  document.getElementById('query').addEventListener('keydown', e => {
+    if (e.key === 'Enter') launch();
+  });
+
+  renderHistory();
+  document.getElementById('query').focus();
+</script>
+
+</body>
+</html>
