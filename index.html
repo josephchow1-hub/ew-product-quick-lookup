@@ -265,6 +265,8 @@
   document.getElementById('query').addEventListener('input', function(){
     document.getElementById('btn-clear').style.display = this.value ? 'block' : 'none';
   });
+
+  document.getElementById('query').addEventListener('keydown', function(e){
     if (e.key === 'Enter') launch();
   });
 
